@@ -5,9 +5,9 @@ This project investigates the potential of using generative adversarial networks
 
 ## Dependencies
 
-I put together some of the code that I had to read data in a package called
-`wxdata` available from my github account. To install it run
-
+For reading satellite data the `wxdata` package is required. It
+consists of the code that I had lying aroung to read CloudSat data.
+To install it run
 ```
 git clone https://github.com/simonpf/wxdata
 cd wxdata

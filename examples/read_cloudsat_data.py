@@ -30,6 +30,11 @@ files = index.get_files("CloudSat_2b_GeoProf",
 ind = np.random.randint(0, len(files))
 file = files[ind].open()
 
+#
+# Radar reflectivity, altitude, latitude and longitued are exposed as a direct attributes
+# of the product class.
+#
+
 z = file.altitude
 x = file.latitude
 x = np.broadcast_to(x.reshape(-1, 1), z.shape)
@@ -45,3 +50,10 @@ ax.set_ylabel("Altitude [km]")
 ax.set_ylim([0, 20])
 
 plt.show()
+
+#
+# The remaining data attributes can be accessed using file[<attribute_name>]. Use
+# file.attributes to list the available entries.
+#
+
+print(file.attributes)
