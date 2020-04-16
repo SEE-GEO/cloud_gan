@@ -13,3 +13,10 @@ git clone https://github.com/simonpf/wxdata
 cd wxdata
 pip install -e .
 ```
+## Installation
+
+To install the package run
+
+```
+pip install -e .
+```
