@@ -1,35 +1,39 @@
 import torch
 class GAN_generator (torch.nn.Module):
-    def __init__(self, D_in, H, D_out):
-        # H=[16384, 256, 128, 64, 1]
+    def __init__(self, H):
+        # H=[384,16384, 256, 128, 64, 1]
         super(GAN_generator, self).__init__()
-        self.dense0 = torch.nn.Linear(D_in,H[0])
+
+
+        self.dense0 = torch.nn.Linear(H[0],H[1])
         #Relu
-        self.batchNorm0 = torch.nn.BatchNorm2d(H[1])
+        self.batchNorm0 = torch.nn.BatchNorm2d(H[2])
 
 
-        self.upsample1 = torch.nn.ConvTranspose2d(H[1],H[1],2, stride=2)
-        self.convolution1 = torch.nn.Conv2d(H[1],H[1],3, stride=1, padding=1) #kolla padding
+        self.upsample1 = torch.nn.ConvTranspose2d(H[2],H[2],2, stride=2)
+        self.convolution1 = torch.nn.Conv2d(H[2],H[2],3, stride=1, padding=1) #kolla padding
         # Relu
-        self.batchNorm1 = torch.nn.BatchNorm2d(H[1])
+        self.batchNorm1 = torch.nn.BatchNorm2d(H[2])
 
-        self.upsample2 = torch.nn.ConvTranspose2d(H[1],H[1],2,stride=2)
-        self.convolution2 = torch.nn.Conv2d(H[1],H[2],3,stride=1,padding=1)
+        self.upsample2 = torch.nn.ConvTranspose2d(H[2],H[2],2,stride=2)
+        self.convolution2 = torch.nn.Conv2d(H[2],H[3],3,stride=1,padding=1)
         # Relu
-        self.batchNorm2 = torch.nn.BatchNorm2d(H[2])
+        self.batchNorm2 = torch.nn.BatchNorm2d(H[3])
 
 
-        self.upsample3 = torch.nn.ConvTranspose2d(H[2], H[2],2,stride=2)
-        self.convolution3 = torch.nn.Conv2d(H[2], H[3],3,stride=1,padding=1)
+        self.upsample3 = torch.nn.ConvTranspose2d(H[3], H[3],2,stride=2)
+        self.convolution3 = torch.nn.Conv2d(H[3], H[4],3,stride=1,padding=1)
         # Relu
-        self.batchNorm3 = torch.nn.BatchNorm2d(H[3])
+        self.batchNorm3 = torch.nn.BatchNorm2d(H[4])
 
-        self.convolution4 = torch.nn.Conv2d(H[3],H[4],3,stride=1,padding=1)
+        self.convolution4 = torch.nn.Conv2d(H[4],H[5],3,stride=1,padding=1)
         self.tanh4 = torch.nn.Tanh()
 
     def forward(self,x):
-        h_relu0 = self.dense0(x).clamp(min=0)
-        h_relu0 = h_relu0.view(1,256,8, 8)
+        h_conc0=x.view(len(x),-1)
+
+        h_relu0 = self.dense0(h_conc0).clamp(min=0)
+        h_relu0 = h_relu0.view(len(x),256,8, 8)
         h_norm0 = self.batchNorm0(h_relu0)
 
 

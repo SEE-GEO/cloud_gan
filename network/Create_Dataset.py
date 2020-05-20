@@ -25,7 +25,7 @@ def create_dataset():
     rr = file.radar_reflectivity
 
 
-    rr_data_element=np.ones([(int)(len(z)/64),64,64])*(-40)
+    rr_data_element=np.ones([(len(z)//64),64,64])*(-40)
     mask = rr_data_element == -8888
     rr_data_element =ma.masked_array(rr_data_element,mask=mask, dtype=np.float32)
     # should we change the mask?
@@ -51,4 +51,5 @@ def create_dataset():
     #pcm = ax.pcolormesh(xplot, yplot , np.transpose(rr_data_element[250]), norm=norm)
 
     #plt.show()
+    #files[ind].close()
     return rr_data_element
