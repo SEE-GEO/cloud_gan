@@ -1,7 +1,10 @@
 import torch
 class GAN_generator (torch.nn.Module):
     def __init__(self, H):
+        #for gan
         # H=[384,16384, 256, 128, 64, 1]
+        #for cgan
+        # H=[704,16384, 256, 128, 64, 1]
         super(GAN_generator, self).__init__()
 
 
@@ -29,13 +32,14 @@ class GAN_generator (torch.nn.Module):
         self.convolution4 = torch.nn.Conv2d(H[4],H[5],3,stride=1,padding=1)
         self.tanh4 = torch.nn.Tanh()
 
-    def forward(self,x):
-        h_conc0=x.view(len(x),-1)
-
+    def forward(self,x, modis):
+        if modis==None:
+            h_conc0=x.view(len(x),-1)
+        else:
+            h_conc0 = torch.cat([x.reshape(len(x),-1),modis.reshape(len(modis),-1)],dim=1)
         h_relu0 = self.dense0(h_conc0).clamp(min=0)
         h_relu0 = h_relu0.view(len(x),256,8, 8)
         h_norm0 = self.batchNorm0(h_relu0)
-
 
         h_upsample1 = self.upsample1(h_norm0)
         h_relu1 = self.convolution1(h_upsample1).clamp(min=0)

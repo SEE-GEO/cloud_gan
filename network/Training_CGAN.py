@@ -14,11 +14,15 @@ from GAN_discriminator import GAN_discriminator
 #from Create_Dataset import create_dataset
 # parameters for the generator
 from plot_cloud import plot_cloud
-def Training_GAN():
+def Training_CGAN():
 
-    H_gen=[384,16384, 256, 128, 64, 1]
-    D_in_gen=[64,64,6]
+    H_gen=[704,16384, 256, 128, 64, 1]
+    #D_in_gen=[64,64,6]
     D_out=[64,64]
+    N=15
+    num_epochs=10
+    num_files = 10
+    num_batches = 1
     #ngpu=0
     batch_size=64
     workers=2
@@ -31,9 +35,10 @@ def Training_GAN():
     #H_disc = [5, 256, 128, 128, 5, 6, 64, 128, 256, 256, 4*4*256, 1]
     #for GAN
 
-    H_disc = [5, 256, 128, 128, 5, 1, 64, 128, 256, 256, 4096, 1]
-    netG = GAN_generator(H_gen).to(device)
-    netD = GAN_discriminator(H_disc).to(device)
+    H_disc =[10, 256, 128, 128, 10, 11, 64, 128, 256, 256, 4096, 1]
+
+    netG = GAN_generator(H_gen).float().to(device)
+    netD = GAN_discriminator(H_disc).float().to(device)
 
     #b_size=1
     real_label = 1
@@ -44,8 +49,8 @@ def Training_GAN():
 
     optimizerD= torch.optim.Adam(netD.parameters(),lr=lr, betas = (beta1,0.999))
     optimizerG= torch.optim.Adam(netG.parameters(),lr=lr, betas = (beta1,0.999))
-    if path.exists('network_parameters.pt'):
-        checkpoint = torch.load('network_parameters.pt')
+    if path.exists('network_parameters_CGAN.pt'):
+        checkpoint = torch.load('network_parameters_CGAN.pt')
         netG.load_state_dict(checkpoint['model_state_dict_gen'])
         optimizerG.load_state_dict(checkpoint['optimizer_state_dict_gen'])
         netD.load_state_dict(checkpoint['model_state_dict_disc'])
@@ -54,58 +59,78 @@ def Training_GAN():
         G_losses = checkpoint['loss_gen']
         D_losses = checkpoint['loss_disc']
         noise_parameter = checkpoint['noise_parameter']
-
+        print('network parameters loaded')
     else:
         G_losses=[]
         D_losses=[]
         epoch_saved=-1
-        noise_parameter = 0.7
+        noise_parameter = 0.1
+        print('new network initialised')
+    #for each epoch
 
     now = datetime.now().time()  # time object
-    print("reading of cloudsat files started: ", now)
-    for cloudsat_file in range(0,4999):
-        location = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/rr_data/training_data/'
-        file_string = location + 'rr_data_2015_' + str(cloudsat_file).zfill(4) +'.h5'
+
+    print("reading of files started: ", now)
+    for cloudsat_file in range(0,4900):
+        location = './modis_cloudsat_data/training_data/'
+        file_string = location + 'rr_modis_cloudsat_data_2015_' + str(cloudsat_file).zfill(4) +'.h5'
         if path.exists(file_string):
             hf = h5py.File(file_string, 'r')
 
             cloudsat_scenes_temp = torch.tensor(hf.get('rr')).view(-1,1,64,64)
+            modis_scenes_temp = torch.tensor(hf.get('emissivity')).view(-1,1,64,10).float()
+            modis_scenes_temp[modis_scenes_temp == -40] = 0
             if cloudsat_file == 0 :
                 cloudsat_scenes=cloudsat_scenes_temp
+                modis_scenes = modis_scenes_temp
             else:
                 cloudsat_scenes = torch.cat([cloudsat_scenes,cloudsat_scenes_temp],0)
-    now = datetime.now().time()  # time object
-    print("reading of cloudsat files is done : ", now)
-    for epoch in range(epoch_saved+1, 2000):
-        #for each batch
-        if epoch%100 == 0:
-            now = datetime.now().time()  # time object
-            print("epoch number ", str(epoch),' started: ', now)
+                modis_scenes = torch.cat([modis_scenes,modis_scenes_temp],0)
 
-        dataloader = torch.utils.data.DataLoader(cloudsat_scenes, batch_size=batch_size, shuffle=True,
+    now = datetime.now().time()  # time object
+
+    print(len(cloudsat_scenes)," files loaded: ", now)
+
+    dataset = torch.utils.data.TensorDataset(cloudsat_scenes,modis_scenes)
+
+
+
+    for epoch in range(epoch_saved+1, 50):
+        #for each batch
+
+        now = datetime.now().time()  # time object
+
+        print('epoch ', epoch, " started: ", now)
+
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True,
                                                  num_workers=workers)
         j=0
         for i, data in enumerate(dataloader,0):
+
             trainable =True
             #training discriminator with real data
             netD.zero_grad()
-            real_cpu0 = data.to(device)
+            real_cpu0 = data[0].to(device)
             b_size = real_cpu0.size(0)
-           # print(i)
+
+            real_cpu0 = torch.transpose(real_cpu0,2,3)
 
 
             label=torch.full((b_size, ),real_label,device=device)
             #for CGAN
-            #D_in_disc = [b_size, 5, 1, 64]
+            #D_in_disc = [b_size, 10, 1, 64]
+            D_modis = [b_size, 10,1,64]
             #for GAN
             D_in_disc = [b_size, 1, 64, 64]
             D_out = [b_size,64, 64]
-
+            modis = data[1].to(device)
             noise = noise_parameter * torch.randn(D_in_disc)
             real_cpu1 = noise.to(device)
 
+            modis = torch.transpose(modis,1,3)
+            modis = torch.transpose(modis,2,3)
 
-            output=netD(None,real_cpu0+real_cpu1).view(-1)
+            output=netD(modis,real_cpu0+real_cpu1).view(-1)
 
             errD_real = criterion(output,label)
 
@@ -113,16 +138,17 @@ def Training_GAN():
             D_x = output.mean().item()
 
             #training discriminator with generated data
-            D_in_gen = [b_size, 64, 6]
+            D_in_gen = [b_size, 1, 1, 64]
             noise = torch.randn(D_in_gen).to(device)
 
-            fake = netG(noise,None)
+
+            fake = netG(noise,modis)
             label.fill_(fake_label)
 
             noise = noise_parameter * torch.randn(D_in_disc)
             real_cpu1 = noise.to(device)
 
-            output = netD(None,fake.detach() + real_cpu1).view(-1)
+            output = netD(modis,fake.detach() + real_cpu1).view(-1)
 
             errD_fake = criterion(output,label)
 
@@ -140,9 +166,9 @@ def Training_GAN():
             label.fill_(real_label) # fake labels are real for generator cost
 
             noise = noise_parameter * torch.randn(D_in_disc)
-            real_cpu1 = noise.to(device)#f2, axtest = plt.subplots(1,1)
+            real_cpu1 = noise.to(device)
 
-            output = netD(None,fake + real_cpu1).view(-1)
+            output = netD(modis,fake + real_cpu1).view(-1)
             errG = criterion(output,label)
 
             errG.backward()
@@ -158,7 +184,7 @@ def Training_GAN():
                 # Save Losses for plotting later
             G_losses.append(errG.item())
             D_losses.append(errD.item())
-        noise_parameter = noise_parameter*0.9
+        noise_parameter = noise_parameter*0.7
         torch.save({
             'epoch': epoch,
             'model_state_dict_gen': netG.state_dict(),
@@ -168,8 +194,8 @@ def Training_GAN():
             'optimizer_state_dict_disc': optimizerD.state_dict(),
             'loss_disc': D_losses,
             'noise_parameter' : noise_parameter
-        }, 'network_parameters.pt')
-        if epoch%100 == 0:
+        }, 'network_parameters_CGAN.pt')
+        if epoch%10 == 0:
             ending = str(epoch) + '.pt'
             torch.save({
                 'epoch': epoch,
@@ -180,29 +206,13 @@ def Training_GAN():
                 'optimizer_state_dict_disc': optimizerD.state_dict(),
                 'loss_disc': D_losses,
                 'noise_parameter': noise_parameter
-            }, 'network_parameters_' + ending)
+            }, 'network_parameters_CGAN_' + ending)
 
-        example_string = 'example_epoch_' + str(epoch).zfill(3)
-        noise = torch.randn(D_in_gen).to(device)
-        output0 = netG(noise,None)
-        noise = torch.randn(D_in_gen).to(device)
-        output1 = netG(noise,None)
-        noise = torch.randn(D_in_gen).to(device)
-        output2 = netG(noise,None)
-        noise = torch.randn(D_in_gen).to(device)
-        output3 = netG(noise,None)
-        noise = torch.randn(D_in_gen).to(device)
-        output4 = netG(noise,None)
-        torch.save({
-            'example0': output0,
-            'example1': output1,
-            'example2': output2,
-            'example3': output3,
-            'example4': output4
-        }, example_string)
-        if epoch%100 == 0:
-            now = datetime.now().time()  # time object
-            print("epoch number ", str(epoch),' ended: ', now)
+
+        now = datetime.now().time()  # time object
+
+        print('epoch ', epoch, " ended: ", now)
+
     print('done')
     #noise=torch.randn(D_in_gen)
     #output=netG(noise)

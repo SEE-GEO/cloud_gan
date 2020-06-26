@@ -2,13 +2,17 @@ from plot_cloud import plot_cloud
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-checkpoint = torch.load('example_epoch_009')
-
+checkpoint = torch.load('./example_epoch_CGAN_009', map_location=torch.device('cpu'))
+checkpoint_parameter = torch.load('network_parameters_CGAN.pt',map_location=torch.device('cpu'))
+noise_parameter = checkpoint_parameter['noise_parameter']
+print(noise_parameter)
 
 xplot=range(0,64)
 yplot=range(0,64)
 from matplotlib.colors import Normalize
 f,axs = plt.subplots(5,5)
+
+
 #f2, axtest = plt.subplots(1,1)
 #ax=axs[range(0,3),range(0,3)]
 norm = Normalize(-35, 20)
@@ -21,14 +25,15 @@ for i in range(0,5):
         rr=rr.detach().numpy()
         rr=np.array(rr)
        # print(j)
-       # print(rr.shape)
+        print(rr.shape)
         '''
-        test = axtest.pcolormesh(xplot, yplot, np.transpose(rr[19][0]), norm=norm)
+        test = axtest.pcolormesh(xplot, yplot, np.transpose(rr[10][0]), norm=norm)
         title_str = 'Scene' + str(i)
         axtest.set_title(title_str, fontsize=2)
-        #cb = f2.colorbar(test, ax=axtest)
+        cb2 = f2.colorbar(test, ax=axtest)
+        cb2.set_label('Reflectivities [dBZ]', fontsize=2)
         '''
-        rr = rr[j+15][0]
+        rr = rr[j + i][0]
 
         pcm = axs[i,j].pcolormesh(xplot, yplot, np.transpose(rr), norm=norm)
         title_str = 'Scene' + str(i)
@@ -38,4 +43,4 @@ for i in range(0,5):
         axs[i,j].tick_params(axis='both', which='major', labelsize='2')
         cb.ax.tick_params(labelsize=2)
 
-plt.savefig('testepoch9_3')
+plt.savefig('testepoch009_CGAN_ver1_1')
