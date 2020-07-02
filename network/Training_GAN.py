@@ -44,8 +44,10 @@ def Training_GAN():
 
     optimizerD= torch.optim.Adam(netD.parameters(),lr=lr, betas = (beta1,0.999))
     optimizerG= torch.optim.Adam(netG.parameters(),lr=lr, betas = (beta1,0.999))
-    if path.exists('network_parameters.pt'):
-        checkpoint = torch.load('network_parameters.pt')
+
+    folder = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_gan_ver3/'
+    if path.exists(folder + 'network_parameters.pt'):
+        checkpoint = torch.load(folder + 'network_parameters.pt')
         netG.load_state_dict(checkpoint['model_state_dict_gen'])
         optimizerG.load_state_dict(checkpoint['optimizer_state_dict_gen'])
         netD.load_state_dict(checkpoint['model_state_dict_disc'])
@@ -76,7 +78,7 @@ def Training_GAN():
                 cloudsat_scenes = torch.cat([cloudsat_scenes,cloudsat_scenes_temp],0)
     now = datetime.now().time()  # time object
     print("reading of cloudsat files is done : ", now)
-    for epoch in range(epoch_saved+1, 2000):
+    for epoch in range(epoch_saved+1, 2500):
         #for each batch
         if epoch%100 == 0:
             now = datetime.now().time()  # time object

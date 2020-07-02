@@ -6,8 +6,8 @@ from os import path
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-
-checkpoint_parameter = torch.load('network_parameters_CGAN.pt',map_location=torch.device('cpu'))
+folder = './training_results_cgan_ver1/'
+checkpoint_parameter = torch.load(folder + 'network_parameters_CGAN.pt',map_location=torch.device('cpu'))
 noise_parameter = checkpoint_parameter['noise_parameter']
 print(noise_parameter)
 H_gen=[704,16384, 256, 128, 64, 1]
@@ -27,19 +27,20 @@ b_size = 1
 D_in_gen = [b_size, 1,1,64]
 
 
-
-for cloudsat_file in range(5, 10):
-    location = './modis_cloudsat_data/'
-    file_string = location + 'rr_modis_cloudsat_data_2015_' + str(cloudsat_file*50).zfill(4) + '.h5'
+counter = 0
+for cloudsat_file in range(0, 500):
+    location = './modis_cloudsat_data/test_data/'
+    file_string = location + 'rr_modis_cloudsat_data_2015_' + str(cloudsat_file).zfill(4) + '.h5'
     if path.exists(file_string):
         hf = h5py.File(file_string, 'r')
 
         cloudsat_scenes_temp = torch.tensor(hf.get('rr')).view(-1, 1, 64, 64)
         modis_scenes_temp = torch.tensor(hf.get('emissivity')).view(-1, 1, 64, 10).float()
 
-        if cloudsat_file == 5:
+        if counter == 0:
             cloudsat_scenes = cloudsat_scenes_temp
             modis_scenes = modis_scenes_temp
+            counter = 1
         else:
             cloudsat_scenes = torch.cat([cloudsat_scenes, cloudsat_scenes_temp], 0)
             modis_scenes = torch.cat([modis_scenes, modis_scenes_temp], 0)
@@ -77,7 +78,7 @@ for i, data in enumerate(dataloader,0):
     modis = torch.transpose(modis, 1, 3)
     modis = torch.transpose(modis, 2, 3)
     print(modis.shape)
-    noise = torch.randn(D_in_gen).to(device)
+    noise = (torch.randn(D_in_gen)*0.001).to(device)
     print(noise.shape)
     output = netG(noise, modis)
     output = (output + 1) * (55 / 2) - 35
@@ -100,4 +101,4 @@ for i, data in enumerate(dataloader,0):
     axs[i, 1].tick_params(axis='both', which='major', labelsize='2')
     cb.ax.tick_params(labelsize=2)
 
-plt.savefig('testepoch009_CGAN_ver1_1')
+plt.savefig('testepoch' + str(epoch) + '_CGAN_ver1_1')

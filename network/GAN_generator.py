@@ -4,7 +4,7 @@ class GAN_generator (torch.nn.Module):
         #for gan
         # H=[384,16384, 256, 128, 64, 1]
         #for cgan
-        # H=[704,16384, 256, 128, 64, 1]
+        # H=[576,16384, 256, 128, 64, 1]
         super(GAN_generator, self).__init__()
 
 

@@ -62,11 +62,11 @@ plt.savefig('histogram_gan_real')
 D_gen = [len(cloudsat_scenes)//(64*100), 64, 6]
 H_gen=[384,16384, 256, 128, 64, 1]
 netG = GAN_generator(H_gen)
-
-if path.exists('network_parameters.pt'):
+folder = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_gan_ver3/'
+if path.exists(folder + 'network_parameters.pt'):
     print('adasdefavcsxasxa')
     with torch.no_grad():
-        folder_path = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_old/'
+        folder_path = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_gan_ver3/'
         checkpoint = torch.load(folder_path + 'network_parameters.pt', map_location=torch.device('cpu'))
         netG.load_state_dict(checkpoint['model_state_dict_gen'])
         netG.zero_grad()
@@ -101,7 +101,7 @@ if path.exists('network_parameters.pt'):
         ax.set_aspect(135 / 64)
         cb=f.colorbar(pcm,ax=ax , orientation = 'horizontal', fraction = 0.049, pad=0.15)
         cb.set_label('Norm. occurrence (generated)')
-        plt.savefig('histogram_gan_generated_ver1')
+        plt.savefig('histogram_gan_generated_ver3')
 
     difference_histogram = new_total_generated - new_total
     x = np.linspace(bin_edges[30], 20, 135)
@@ -114,6 +114,6 @@ if path.exists('network_parameters.pt'):
 
     cb=f.colorbar(pcm,ax=ax , orientation = 'horizontal', fraction = 0.049, pad=0.15)
     cb.set_label('Occurence bias (gen. - real)')
-    plt.savefig('histogram_difference_ver1')
+    plt.savefig('histogram_difference_ver3')
 
 

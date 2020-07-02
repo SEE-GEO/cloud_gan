@@ -16,7 +16,7 @@ from GAN_discriminator import GAN_discriminator
 from plot_cloud import plot_cloud
 def Training_CGAN():
 
-    H_gen=[704,16384, 256, 128, 64, 1]
+    H_gen=[576,16384, 256, 128, 64, 1]
     #D_in_gen=[64,64,6]
     D_out=[64,64]
     N=15
@@ -35,7 +35,7 @@ def Training_CGAN():
     #H_disc = [5, 256, 128, 128, 5, 6, 64, 128, 256, 256, 4*4*256, 1]
     #for GAN
 
-    H_disc =[10, 256, 128, 128, 10, 11, 64, 128, 256, 256, 4096, 1]
+    H_disc =[8, 256, 128, 128, 8, 9, 64, 128, 256, 256, 4096, 1]
 
     netG = GAN_generator(H_gen).float().to(device)
     netD = GAN_discriminator(H_disc).float().to(device)
@@ -49,8 +49,9 @@ def Training_CGAN():
 
     optimizerD= torch.optim.Adam(netD.parameters(),lr=lr, betas = (beta1,0.999))
     optimizerG= torch.optim.Adam(netG.parameters(),lr=lr, betas = (beta1,0.999))
-    if path.exists('network_parameters_CGAN.pt'):
-        checkpoint = torch.load('network_parameters_CGAN.pt')
+    folder = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/'
+    if path.exists(folder + 'network_parameters_CGAN.pt'):
+        checkpoint = torch.load(folder + 'network_parameters_CGAN.pt')
         netG.load_state_dict(checkpoint['model_state_dict_gen'])
         optimizerG.load_state_dict(checkpoint['optimizer_state_dict_gen'])
         netD.load_state_dict(checkpoint['model_state_dict_disc'])
@@ -71,6 +72,7 @@ def Training_CGAN():
     now = datetime.now().time()  # time object
 
     print("reading of files started: ", now)
+    '''
     for cloudsat_file in range(0,4900):
         location = './modis_cloudsat_data/training_data/'
         file_string = location + 'rr_modis_cloudsat_data_2015_' + str(cloudsat_file).zfill(4) +'.h5'
@@ -86,16 +88,23 @@ def Training_CGAN():
             else:
                 cloudsat_scenes = torch.cat([cloudsat_scenes,cloudsat_scenes_temp],0)
                 modis_scenes = torch.cat([modis_scenes,modis_scenes_temp],0)
-
+    '''
     now = datetime.now().time()  # time object
+    location = './modis_cloudsat_data/'
+    file_string = location + 'modi_cloudsat_training_data_conc'+ '.h5'
+    hf = h5py.File(file_string, 'r')
 
+    cloudsat_scenes = torch.tensor(hf.get('cloudsat_scenes'))
+
+    modis_scenes = torch.tensor(hf.get('modis_scenes'))
     print(len(cloudsat_scenes)," files loaded: ", now)
-
+    temp_modis_scenes = torch.cat([modis_scenes[:,:,:,0:3],modis_scenes[:,:,:,4:9]],3)
+    modis_scenes=temp_modis_scenes
     dataset = torch.utils.data.TensorDataset(cloudsat_scenes,modis_scenes)
 
 
 
-    for epoch in range(epoch_saved+1, 50):
+    for epoch in range(epoch_saved+1, 10):
         #for each batch
 
         now = datetime.now().time()  # time object
@@ -119,7 +128,7 @@ def Training_CGAN():
             label=torch.full((b_size, ),real_label,device=device)
             #for CGAN
             #D_in_disc = [b_size, 10, 1, 64]
-            D_modis = [b_size, 10,1,64]
+            D_modis = [b_size, 8,1,64]
             #for GAN
             D_in_disc = [b_size, 1, 64, 64]
             D_out = [b_size,64, 64]
