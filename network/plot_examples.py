@@ -4,7 +4,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 folder = './'
-checkpoint_parameter = torch.load('network_parameters_2300.pt',map_location=torch.device('cpu'))
+checkpoint_parameter = torch.load('network_parameters.pt',map_location=torch.device('cpu'))
 noise_parameter = checkpoint_parameter['noise_parameter']
 print(noise_parameter)
 H_gen=[384,16384, 256, 128, 64, 1]
@@ -47,4 +47,4 @@ for i in range(0,5):
         axs[i, j].tick_params(axis='both', which='major', labelsize='2')
         cb.ax.tick_params(labelsize=2)
 
-plt.savefig('testepoch'+ str(epoch) +'_GAN_ver3_1')
+plt.savefig('testepoch'+ str(epoch) +'_GAN_ver4_1')

@@ -6,13 +6,13 @@ from os import path
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-folder = './training_results_cgan_ver1/'
-checkpoint_parameter = torch.load(folder + 'network_parameters_CGAN.pt',map_location=torch.device('cpu'))
+folder = './'
+checkpoint_parameter = torch.load(folder + 'network_parameters_CGAN_120.pt',map_location=torch.device('cpu'))
 noise_parameter = checkpoint_parameter['noise_parameter']
 print(noise_parameter)
-H_gen=[704,16384, 256, 128, 64, 1]
+H_gen=[576,16384, 256, 128, 64, 1]
 device = torch.device("cuda:0" if (torch.cuda.is_available()) else "cpu")
-
+epoch = checkpoint_parameter['epoch']
 real_label = 1
 fake_label = 0
 beta1 = 0.5
@@ -23,12 +23,13 @@ lr = 0.0002
 netG = GAN_generator(H_gen).float().to(device)
 optimizerG = torch.optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 netG.load_state_dict(checkpoint_parameter['model_state_dict_gen'])
+
 b_size = 1
 D_in_gen = [b_size, 1,1,64]
 
-
+'''
 counter = 0
-for cloudsat_file in range(0, 500):
+for cloudsat_file in range(0, 4900):
     location = './modis_cloudsat_data/test_data/'
     file_string = location + 'rr_modis_cloudsat_data_2015_' + str(cloudsat_file).zfill(4) + '.h5'
     if path.exists(file_string):
@@ -45,7 +46,21 @@ for cloudsat_file in range(0, 500):
             cloudsat_scenes = torch.cat([cloudsat_scenes, cloudsat_scenes_temp], 0)
             modis_scenes = torch.cat([modis_scenes, modis_scenes_temp], 0)
 
-dataset = torch.utils.data.TensorDataset(cloudsat_scenes,modis_scenes)
+
+temp_modis_scenes = torch.cat([modis_scenes[:,:,:,0:3],modis_scenes[:,:,:,4:9]],3)
+modis_scenes=temp_modis_scenes
+'''
+location = './modis_cloudsat_data/'
+file_string = location + 'modis_cloudsat_test_data_conc' + '.h5'
+hf = h5py.File(file_string, 'r')
+
+cloudsat_scenes = torch.tensor(hf.get('cloudsat_scenes'))
+
+modis_scenes = torch.tensor(hf.get('modis_scenes'))
+
+temp_modis_scenes = torch.cat([modis_scenes[:, :, :, 0:3], modis_scenes[:, :, :, 4:9]], 3)
+modis_scenes = temp_modis_scenes
+dataset = torch.utils.data.TensorDataset(cloudsat_scenes, modis_scenes)
 
 
 
@@ -54,8 +69,9 @@ dataset = torch.utils.data.TensorDataset(cloudsat_scenes,modis_scenes)
 
 
 
-xplot=range(0,64)
-yplot=range(0,64)
+
+xplot=(range(0,64))
+yplot=(range(0,64))
 from matplotlib.colors import Normalize
 f,axs = plt.subplots(5,2)
 
@@ -78,7 +94,7 @@ for i, data in enumerate(dataloader,0):
     modis = torch.transpose(modis, 1, 3)
     modis = torch.transpose(modis, 2, 3)
     print(modis.shape)
-    noise = (torch.randn(D_in_gen)*0.001).to(device)
+    noise = (torch.randn(D_in_gen)).to(device)
     print(noise.shape)
     output = netG(noise, modis)
     output = (output + 1) * (55 / 2) - 35
@@ -101,4 +117,4 @@ for i, data in enumerate(dataloader,0):
     axs[i, 1].tick_params(axis='both', which='major', labelsize='2')
     cb.ax.tick_params(labelsize=2)
 
-plt.savefig('testepoch' + str(epoch) + '_CGAN_ver1_1')
+plt.savefig('testepoch' + str(epoch) + '_CGAN_ver_6')

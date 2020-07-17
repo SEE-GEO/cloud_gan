@@ -45,7 +45,7 @@ def Training_GAN():
     optimizerD= torch.optim.Adam(netD.parameters(),lr=lr, betas = (beta1,0.999))
     optimizerG= torch.optim.Adam(netG.parameters(),lr=lr, betas = (beta1,0.999))
 
-    folder = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_gan_ver3/'
+    folder = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/'
     if path.exists(folder + 'network_parameters.pt'):
         checkpoint = torch.load(folder + 'network_parameters.pt')
         netG.load_state_dict(checkpoint['model_state_dict_gen'])
@@ -78,9 +78,9 @@ def Training_GAN():
                 cloudsat_scenes = torch.cat([cloudsat_scenes,cloudsat_scenes_temp],0)
     now = datetime.now().time()  # time object
     print("reading of cloudsat files is done : ", now)
-    for epoch in range(epoch_saved+1, 2500):
+    for epoch in range(epoch_saved+1, 3000):
         #for each batch
-        if epoch%100 == 0:
+        if epoch%500 == 0:
             now = datetime.now().time()  # time object
             print("epoch number ", str(epoch),' started: ', now)
 
@@ -171,7 +171,7 @@ def Training_GAN():
             'loss_disc': D_losses,
             'noise_parameter' : noise_parameter
         }, 'network_parameters.pt')
-        if epoch%100 == 0:
+        if epoch%200 == 0:
             ending = str(epoch) + '.pt'
             torch.save({
                 'epoch': epoch,
@@ -183,7 +183,7 @@ def Training_GAN():
                 'loss_disc': D_losses,
                 'noise_parameter': noise_parameter
             }, 'network_parameters_' + ending)
-
+        '''
         example_string = 'example_epoch_' + str(epoch).zfill(3)
         noise = torch.randn(D_in_gen).to(device)
         output0 = netG(noise,None)
@@ -202,7 +202,8 @@ def Training_GAN():
             'example3': output3,
             'example4': output4
         }, example_string)
-        if epoch%100 == 0:
+        '''
+        if epoch%500 == 0:
             now = datetime.now().time()  # time object
             print("epoch number ", str(epoch),' ended: ', now)
     print('done')

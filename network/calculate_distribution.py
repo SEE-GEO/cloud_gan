@@ -4,6 +4,8 @@ import h5py
 import torch
 import matplotlib.pyplot as plt
 
+# code for loading nonconcatinated data
+'''
 for cloudsat_file in range(0, 10):
     location = './modis_cloudsat_data/training_data/'
     file_string = location + 'rr_modis_cloudsat_data_2015_' + str(cloudsat_file).zfill(4) + '.h5'
@@ -19,13 +21,24 @@ for cloudsat_file in range(0, 10):
         else:
             #cloudsat_scenes = torch.cat([cloudsat_scenes, cloudsat_scenes_temp], 0)
             modis_scenes = torch.cat([modis_scenes, modis_scenes_temp], 0)
+'''
+location = './modis_cloudsat_data/'
+file_string = location + 'modis_cloudsat_training_data_conc' + '.h5'
+hf = h5py.File(file_string, 'r')
+
+
+
+modis_scenes = np.array(hf.get('modis_scenes'))
+temp_modis_scenes = np.concatenate([modis_scenes[:, :, :, 0:3], modis_scenes[:, :, :, 4:9]], 3)
+modis_scenes = temp_modis_scenes
+
 nbins = 100
 print(modis_scenes.shape)
-modis_scenes = np.array(modis_scenes)
+
 modis_histogram = np.zeros([100,64,10])
-f,ax = plt.subplots(10,1)
-plot=np.zeros([10,100])
-for j in range (0,10):
-    print((np.histogram(modis_scenes[:,0,:,j], bins=nbins, range = (-1,5),density=True)[0]).shape)
-    ax[j].hist(modis_scenes[:,0,:,j], bins=nbins, range = (-1,10),density=True)
-    plt.savefig('distr_modis_channel_' + str(j))
+f,ax = plt.subplots(8,1)
+plot=np.zeros([8,100])
+for j in range (0,8):
+    print('Histogram number ',j, ' done.')
+    ax[j].hist(modis_scenes[:,0,:,j], bins=nbins, range = (-1,1),density=True)
+plt.savefig('distr_modis_channel_' + str(j))

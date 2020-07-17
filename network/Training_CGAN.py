@@ -20,10 +20,7 @@ def Training_CGAN():
     #D_in_gen=[64,64,6]
     D_out=[64,64]
     N=15
-    num_epochs=10
-    num_files = 10
-    num_batches = 1
-    #ngpu=0
+    num_epochs=800
     batch_size=64
     workers=2
 
@@ -32,15 +29,12 @@ def Training_CGAN():
     print(device)
 
     # for CGAN
-    #H_disc = [5, 256, 128, 128, 5, 6, 64, 128, 256, 256, 4*4*256, 1]
-    #for GAN
-
     H_disc =[8, 256, 128, 128, 8, 9, 64, 128, 256, 256, 4096, 1]
 
     netG = GAN_generator(H_gen).float().to(device)
     netD = GAN_discriminator(H_disc).float().to(device)
 
-    #b_size=1
+
     real_label = 1
     fake_label = 0
     beta1=0.5
@@ -65,13 +59,14 @@ def Training_CGAN():
         G_losses=[]
         D_losses=[]
         epoch_saved=-1
-        noise_parameter = 0.1
+        noise_parameter = 0.7
         print('new network initialised')
     #for each epoch
 
     now = datetime.now().time()  # time object
 
     print("reading of files started: ", now)
+    # code for reading nonconcatenated files
     '''
     for cloudsat_file in range(0,4900):
         location = './modis_cloudsat_data/training_data/'
@@ -89,28 +84,25 @@ def Training_CGAN():
                 cloudsat_scenes = torch.cat([cloudsat_scenes,cloudsat_scenes_temp],0)
                 modis_scenes = torch.cat([modis_scenes,modis_scenes_temp],0)
     '''
-    now = datetime.now().time()  # time object
+
     location = './modis_cloudsat_data/'
-    file_string = location + 'modi_cloudsat_training_data_conc'+ '.h5'
+    file_string = location + 'modis_cloudsat_training_data_conc'+ '.h5'
     hf = h5py.File(file_string, 'r')
 
     cloudsat_scenes = torch.tensor(hf.get('cloudsat_scenes'))
 
     modis_scenes = torch.tensor(hf.get('modis_scenes'))
+    now = datetime.now().time()  # time object
     print(len(cloudsat_scenes)," files loaded: ", now)
     temp_modis_scenes = torch.cat([modis_scenes[:,:,:,0:3],modis_scenes[:,:,:,4:9]],3)
     modis_scenes=temp_modis_scenes
     dataset = torch.utils.data.TensorDataset(cloudsat_scenes,modis_scenes)
 
-
-
-    for epoch in range(epoch_saved+1, 10):
-        #for each batch
+    for epoch in range(epoch_saved+1, num_epochs):
 
         now = datetime.now().time()  # time object
-
         print('epoch ', epoch, " started: ", now)
-
+        # creating dataset from modis and cloudsat data
         dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=True,
                                                  num_workers=workers)
         j=0
@@ -146,10 +138,9 @@ def Training_CGAN():
             errD_real.backward()
             D_x = output.mean().item()
 
-            #training discriminator with generated data
+            # training discriminator with generated data
             D_in_gen = [b_size, 1, 1, 64]
             noise = torch.randn(D_in_gen).to(device)
-
 
             fake = netG(noise,modis)
             label.fill_(fake_label)
@@ -193,7 +184,7 @@ def Training_CGAN():
                 # Save Losses for plotting later
             G_losses.append(errG.item())
             D_losses.append(errD.item())
-        noise_parameter = noise_parameter*0.7
+        noise_parameter = noise_parameter*0.8
         torch.save({
             'epoch': epoch,
             'model_state_dict_gen': netG.state_dict(),
@@ -204,7 +195,7 @@ def Training_CGAN():
             'loss_disc': D_losses,
             'noise_parameter' : noise_parameter
         }, 'network_parameters_CGAN.pt')
-        if epoch%10 == 0:
+        if epoch%30 == 0:
             ending = str(epoch) + '.pt'
             torch.save({
                 'epoch': epoch,
