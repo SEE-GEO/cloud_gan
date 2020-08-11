@@ -20,7 +20,7 @@ def Training_CGAN():
     #D_in_gen=[64,64,6]
     D_out=[64,64]
     N=15
-    num_epochs=800
+    num_epochs=400
     batch_size=64
     workers=2
 
@@ -29,7 +29,7 @@ def Training_CGAN():
     print(device)
 
     # for CGAN
-    H_disc =[8, 256, 128, 128, 8, 9, 64, 128, 256, 256, 4096, 1]
+    H_disc =[8, 256, 128, 64, 8, 9, 64, 128, 256, 256, 4096, 1]
 
     netG = GAN_generator(H_gen).float().to(device)
     netD = GAN_discriminator(H_disc).float().to(device)
@@ -86,7 +86,7 @@ def Training_CGAN():
     '''
 
     location = './modis_cloudsat_data/'
-    file_string = location + 'modis_cloudsat_training_data_conc'+ '.h5'
+    file_string = location + 'modis_cloudsat_training_data_conc_ver2'+ '.h5'
     hf = h5py.File(file_string, 'r')
 
     cloudsat_scenes = torch.tensor(hf.get('cloudsat_scenes'))
@@ -195,7 +195,7 @@ def Training_CGAN():
             'loss_disc': D_losses,
             'noise_parameter' : noise_parameter
         }, 'network_parameters_CGAN.pt')
-        if epoch%30 == 0:
+        if epoch%5 == 0:
             ending = str(epoch) + '.pt'
             torch.save({
                 'epoch': epoch,

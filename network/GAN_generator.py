@@ -7,11 +7,9 @@ class GAN_generator (torch.nn.Module):
         # H=[576,16384, 256, 128, 64, 1]
         super(GAN_generator, self).__init__()
 
-
         self.dense0 = torch.nn.Linear(H[0],H[1])
         #Relu
         self.batchNorm0 = torch.nn.BatchNorm2d(H[2])
-
 
         self.upsample1 = torch.nn.ConvTranspose2d(H[2],H[2],2, stride=2)
         self.convolution1 = torch.nn.Conv2d(H[2],H[2],3, stride=1, padding=1) #kolla padding
@@ -22,7 +20,6 @@ class GAN_generator (torch.nn.Module):
         self.convolution2 = torch.nn.Conv2d(H[2],H[3],3,stride=1,padding=1)
         # Relu
         self.batchNorm2 = torch.nn.BatchNorm2d(H[3])
-
 
         self.upsample3 = torch.nn.ConvTranspose2d(H[3], H[3],2,stride=2)
         self.convolution3 = torch.nn.Conv2d(H[3], H[4],3,stride=1,padding=1)

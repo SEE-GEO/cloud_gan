@@ -4,7 +4,7 @@ class GAN_discriminator (torch.nn.Module):
         #for GAN
         # H=[5, 256, 128, 128, 5, 1, 64, 128, 256, 256, 4096, 1]
         #for CGAN
-        # H =[8, 256, 128, 128, 8, 9, 64, 128, 256, 256, 4096, 1]
+        # H =[8, 256, 128, 64, 8, 9, 64, 128, 256, 256, 4096, 1]
         super(GAN_discriminator, self).__init__()
         #region
         self.upsample0 = torch.nn.ConvTranspose2d(H[0],H[0],(4,1), stride=(4,1))

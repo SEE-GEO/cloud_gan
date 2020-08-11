@@ -50,6 +50,7 @@ for i in range(0,10):
 
     #print('max',str(maximum[i]))
 np.ma.set_fill_value(modis_scenes, -1)
+
 '''
 nbins=50
 for i in range(0,2):

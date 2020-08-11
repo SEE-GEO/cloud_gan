@@ -4,14 +4,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 #folder_path = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_old/'
 folder_path = './'
-file_name = 'network_parameters_CGAN_120.pt'
+file_name = 'network_parameters_CGAN_285.pt'
 file_string = folder_path + file_name
 checkpoint = torch.load(file_string, map_location=torch.device('cpu'))
 
 
 f,axs = plt.subplots(1,2)
 
-num_epochs = 120
+num_epochs = 286
 
 string_name = ['loss_gen','loss_disc']
 average = np.zeros((2,num_epochs))

@@ -28,17 +28,17 @@ hf = h5py.File(file_string, 'r')
 
 
 
-modis_scenes = np.array(hf.get('modis_scenes'))
-temp_modis_scenes = np.concatenate([modis_scenes[:, :, :, 0:3], modis_scenes[:, :, :, 4:9]], 3)
+modis_scenes = torch.tensor(hf.get('modis_scenes'))
+temp_modis_scenes = torch.cat([modis_scenes[:, :, :, 0:3], modis_scenes[:, :, :, 4:9]], 3)
 modis_scenes = temp_modis_scenes
 
 nbins = 100
 print(modis_scenes.shape)
 
-modis_histogram = np.zeros([100,64,10])
+modis_histogram = np.zeros([100,64,8])
 f,ax = plt.subplots(8,1)
-plot=np.zeros([8,100])
+
 for j in range (0,8):
     print('Histogram number ',j, ' done.')
-    ax[j].hist(modis_scenes[:,0,:,j], bins=nbins, range = (-1,1),density=True)
+    ax.hist(modis_scenes[:,0,:,j], bins=nbins, range = (-1,1),density=True)
 plt.savefig('distr_modis_channel_' + str(j))
