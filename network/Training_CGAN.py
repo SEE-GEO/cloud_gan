@@ -20,7 +20,7 @@ def Training_CGAN():
     #D_in_gen=[64,64,6]
     D_out=[64,64]
     N=15
-    num_epochs=400
+    num_epochs=3000
     batch_size=64
     workers=2
 
@@ -44,8 +44,8 @@ def Training_CGAN():
     optimizerD= torch.optim.Adam(netD.parameters(),lr=lr, betas = (beta1,0.999))
     optimizerG= torch.optim.Adam(netG.parameters(),lr=lr, betas = (beta1,0.999))
     folder = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/'
-    if path.exists(folder + 'network_parameters_CGAN.pt'):
-        checkpoint = torch.load(folder + 'network_parameters_CGAN.pt')
+    if path.exists(folder + 'network_parameters_CGAN_2650.pt'):
+        checkpoint = torch.load(folder + 'network_parameters_CGAN_2650.pt')
         netG.load_state_dict(checkpoint['model_state_dict_gen'])
         optimizerG.load_state_dict(checkpoint['optimizer_state_dict_gen'])
         netD.load_state_dict(checkpoint['model_state_dict_disc'])
@@ -195,7 +195,7 @@ def Training_CGAN():
             'loss_disc': D_losses,
             'noise_parameter' : noise_parameter
         }, 'network_parameters_CGAN.pt')
-        if epoch%5 == 0:
+        if epoch%25 == 0:
             ending = str(epoch) + '.pt'
             torch.save({
                 'epoch': epoch,

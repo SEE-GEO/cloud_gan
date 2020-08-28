@@ -3,8 +3,8 @@ from plot_cloud import plot_cloud
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-folder = './'
-checkpoint_parameter = torch.load('network_parameters.pt',map_location=torch.device('cpu'))
+folder = './gan_training_results_ver_4/'
+checkpoint_parameter = torch.load(folder + 'network_parameters.pt',map_location=torch.device('cpu'))
 noise_parameter = checkpoint_parameter['noise_parameter']
 print(noise_parameter)
 H_gen=[384,16384, 256, 128, 64, 1]

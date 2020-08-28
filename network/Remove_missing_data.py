@@ -10,7 +10,7 @@ folder = './'
 
 
 location = './modis_cloudsat_data/'
-file_string = location + 'modis_cloudsat_training_data_conc' + '.h5'
+file_string = location + 'modis_cloudsat_test_data_conc' + '.h5'
 hf = h5py.File(file_string, 'r')
 
 cloudsat_scenes = torch.tensor(hf.get('cloudsat_scenes'))
@@ -40,7 +40,7 @@ for i in range(0,len(modis_scenes)):
 print(index_list)
 cloudsat_scenes=cloudsat_scenes[index_list,:,:,:]
 modis_scenes=modis_scenes[index_list,:,:,:]
-name_string = 'training_training_conc_ver2'
+name_string = 'test_data_conc_ver2'
 filename = 'modis_cloudsat_' + name_string + '.h5'
 hf = h5py.File(filename, 'w')
 hf.create_dataset('cloudsat_scenes', data=cloudsat_scenes)

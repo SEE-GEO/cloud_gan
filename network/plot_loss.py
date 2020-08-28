@@ -2,16 +2,16 @@ from plot_cloud import plot_cloud
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
-#folder_path = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/training_results_old/'
+#folder_path = '/cephyr/users/svcarl/Vera/cloud_gan/gan/temp_transfer/gan_training_results_ver_4/'
+#file_name = 'network_parameters.pt'
 folder_path = './'
-file_name = 'network_parameters_CGAN_285.pt'
+file_name = 'network_parameters_CGAN.pt'
 file_string = folder_path + file_name
 checkpoint = torch.load(file_string, map_location=torch.device('cpu'))
 
 
-f,axs = plt.subplots(1,2)
 
-num_epochs = 286
+num_epochs = checkpoint['epoch'] +1
 
 string_name = ['loss_gen','loss_disc']
 average = np.zeros((2,num_epochs))
@@ -30,12 +30,24 @@ for i in range(0,2):
 
 
     print(len(average[i]))
+    if i == 0:
+        f1, axs1 = plt.subplots(1, 1)
+        axs1.plot(np.transpose(average[i]))
+        title_str = string_name[i]
+        axs1.set_xlabel('epoch')
+        axs1.set_ylabel('loss')
+        #axs1.set_title(title_str)
+        axs1.tick_params(axis='both', which='major')
+        plt.savefig('plot_loss_cgan_ver_8_gen.png')
+        print('gen done')
+    else:
 
-    pcm = axs[i].plot(np.transpose(average[i]))
-    title_str = string_name[i]
-    axs[i].set_xlabel('epoch')
-    axs[i].set_ylabel('loss')
-    axs[i].set_title(title_str)
-    axs[i].tick_params(axis='both', which='major')
-
-plt.savefig('plot_loss_cgan_ver_6_training1.png')
+        f2, axs2 = plt.subplots(1, 1)
+        axs2.plot(np.transpose(average[i]))
+        title_str = string_name[i]
+        axs2.set_xlabel('epoch')
+        axs2.set_ylabel('loss')
+        #axs2.set_title(title_str)
+        axs2.tick_params(axis='both', which='major')
+        plt.savefig('plot_loss_cgan_ver_8_disc.png')
+        print('disc done')

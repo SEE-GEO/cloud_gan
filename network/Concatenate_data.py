@@ -34,15 +34,19 @@ print('Files loaded after', (time_files_loaded - time_start).total_seconds(), 's
 print('Number of scenes ', len(modis_scenes))
 minimum = (np.zeros([10,1]))
 maximum = (np.zeros([10,1]))
+file_string = './modis_cloudsat_data/' + 'modis_cloudsat_training_data_conc' + '.h5'
+hf = h5py.File(file_string, 'r')
+minimum= torch.tensor(hf.get('min'))
+maximum= torch.tensor(hf.get('max'))
 f,ax = plt.subplots(2,1)
 print(modis_scenes.shape)
 for i in range(0,10):
-    minimum[i] = (modis_scenes[:,0,:,i]).min()
+    #minimum[i] = (modis_scenes[:,0,:,i]).min()
 
 
     print('min',str(minimum[i]), 'band number ', i)
     modis_scenes[:, 0, :, i] -= minimum[i] - 0.0001
-    maximum[i] = np.ma.max(modis_scenes[:,0,:,i])
+    #maximum[i] = np.ma.max(modis_scenes[:,0,:,i])
     print('max', str(maximum[i]), 'band number ', i)
     modis_scenes[:, 0, :, i] /= maximum[i]/2
     modis_scenes[:, 0, :, i] -=1

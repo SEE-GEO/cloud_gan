@@ -139,6 +139,7 @@ for i, data in enumerate(dataloader,0):
     axs[6, i].tick_params(axis='both', which='both', labelsize='12')
     #axs[6, i].set_aspect(1.5)
     #cb.ax.tick_params(labelsize=2)
+    color_array = ['blue','green','red','purple']
     for j in range(0,4):
         noise = (torch.randn(D_in_gen)).to(device)
         output = netG(noise, modis)
@@ -157,20 +158,23 @@ for i, data in enumerate(dataloader,0):
             axs[6-(j+1), i].set_ylabel('Generated \nAltitude [km]', fontsize=12)
         else:
             axs[6 - (j + 1), i].tick_params(labelleft=False)
+
+        with torch.no_grad():
+            [IWP_generated_1, IWP_generated_2, IWP_generated_3] = IceWaterPathMethod(torch.transpose(output, 2, 3))
+        pcm = axs[0, i].semilogy(xplot, (IWP_generated_1[0, 0]), color=color_array[j], label='IWP generated', basey=10, alpha=0.5)
         #axs[6-(j+1), i].set_aspect(1.5)
         #cb.ax.tick_params(labelsize=2)
 
 
     #output = output.cpu().detach().numpy()[0, 0]
 
-    with torch.no_grad():
-        [IWP_generated_1, IWP_generated_2, IWP_generated_3] = IceWaterPathMethod(torch.transpose(output,2,3))
+
     axs[0, i].minorticks_on()
     axs[0, i].tick_params(axis='both', which='major', labelsize='12')
     axs[0, i].tick_params(axis='both', which='minor')
     axs[0,i].set_ylim([2**(-4),2**4])
-    pcm = axs[0, i].semilogy(xplot, (IWP_generated_1[0, 0]), color='grey', label='IWP generated',basey=2)
-    pcm = axs[0, i].semilogy(xplot, (IWP_cs_1[0,0]), color='black', label='IWP real',basey=2)
+
+    pcm = axs[0, i].semilogy(xplot, (IWP_cs_1[0,0]), color='black', label='IWP real',basey=10)
     title_str = 'IWP generated' + str(i)
     #axs[0,i].set_title(title_str, fontsize=2)
     axs[0, i].tick_params(labelbottom=False)
