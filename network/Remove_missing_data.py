@@ -1,29 +1,27 @@
 import h5py
-from IceWaterPathMethod import IceWaterPathMethod
-from GAN_generator import GAN_generator
-from plot_cloud import plot_cloud
 from os import path
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
 folder = './'
 
-
 location = './modis_cloudsat_data/'
 file_string = location + 'modis_cloudsat_test_data_conc' + '.h5'
 hf = h5py.File(file_string, 'r')
 
+hf2 = h5py.File('./CGAN_elevation/CGAN_elev_lat_long_test_data_conc.h5','r')
 cloudsat_scenes = torch.tensor(hf.get('cloudsat_scenes'))
-
 modis_scenes = torch.tensor(hf.get('modis_scenes'))
 maximum = torch.tensor(hf.get('max'))
 minimum = torch.tensor(hf.get('min'))
+latitude = torch.tensor(hf2.get('latitude'))
+longitude = torch.tensor(hf2.get('longitude'))
+elevation = torch.tensor(hf2.get('DEM_elevation'))
 
 
 print(cloudsat_scenes.shape)
 print(modis_scenes.shape)
-cloudsat_scenes_temp=[]
-modis_scenes_temp = []
+print(latitude.shape)
 index_list=[]
 counter_removed=0
 for i in range(0,len(modis_scenes)):
@@ -38,13 +36,33 @@ for i in range(0,len(modis_scenes)):
         index_list = np.append(index_list, i)
 
 print(index_list)
+print('Shape of the different fields before removal')
+print(latitude.shape)
+print(longitude.shape)
+print(elevation.shape)
+print(cloudsat_scenes.shape)
+print(modis_scenes.shape)
 cloudsat_scenes=cloudsat_scenes[index_list,:,:,:]
 modis_scenes=modis_scenes[index_list,:,:,:]
+latitude = latitude[index_list,:]
+longitude = longitude[index_list,:]
+elevation = elevation[index_list,:]
+
+print('Shape of the different fields after removal')
+print(latitude.shape)
+print(longitude.shape)
+print(elevation.shape)
+print(cloudsat_scenes.shape)
+print(modis_scenes.shape)
 name_string = 'test_data_conc_ver2'
-filename = 'modis_cloudsat_' + name_string + '.h5'
+filename = 'modis_cloudsat_ElevLatLong_' + name_string + '.h5'
 hf = h5py.File(filename, 'w')
 hf.create_dataset('cloudsat_scenes', data=cloudsat_scenes)
 hf.create_dataset('modis_scenes', data=modis_scenes)
 hf.create_dataset('max', data=maximum)
 hf.create_dataset('min', data=minimum)
+hf.create_dataset('latitude', data=latitude)
+hf.create_dataset('longitude', data=longitude)
+hf.create_dataset('DEM_elevation', data=elevation)
+hf.create_dataset('index_list', data = index_list)
 hf.close()
