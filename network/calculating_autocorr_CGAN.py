@@ -31,7 +31,7 @@ for j in range(0, len(all_generated)):
 
     if j < 5:
         f, ax = plt.subplots(2, 1, figsize=(10, 14))
-        pcm1 = ax[0].pcolormesh(xplot, yplot,auto_corr_plot[j],vmin=-1,vmax=1)
+        pcm1 = ax[0].pcolormesh(xplot, yplot,auto_corr_plot[j],vmin=-1,vmax=1,cmap='seismic')
         cbar1 = f.colorbar(pcm1, ax=ax[0], fraction=0.042, pad=0.04)
         cbar1.set_label('Autocorrelation ', fontsize=ex_fontsize)
         cbar1.ax.tick_params(labelsize=ex_fontsize)
@@ -53,7 +53,7 @@ for j in range(0, len(all_generated)):
 
 f, ax = plt.subplots(1, 1, figsize=(10.5, 15))
 average_auto_corr_gan = np.average(auto_corr_plot, 0)
-pcm1 = ax.pcolormesh(xplot, yplot,average_auto_corr_gan)
+pcm1 = ax.pcolormesh(xplot, yplot,average_auto_corr_gan,vmin=-1,vmax=1,cmap='seismic')
 ax.tick_params(axis='both', which='major', labelsize=26)
 ax.set_xlabel('Distance [km]', fontsize=28)
 #ax.set_ylabel('Altitude [km]', fontsize=28)
@@ -110,7 +110,7 @@ for j in range(0, len(cs_scenes)):
 f, ax = plt.subplots(1, 1, figsize=(10.5, 15))
 average_auto_corr_cs = np.average(auto_corr_plot, 0)
 print(np.max(average_auto_corr_cs))
-pcm1 = ax.pcolormesh(xplot, yplot,average_auto_corr_cs)
+pcm1 = ax.pcolormesh(xplot, yplot,average_auto_corr_cs,vmin=-1,vmax=1,cmap='seismic')
 ax.tick_params(axis='both', which='major', labelsize=26)
 ax.set_xlabel('Distance [km]', fontsize=28)
 #ax.set_ylabel('Altitude [km]', fontsize=28)
