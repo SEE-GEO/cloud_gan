@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: wxdata
+Version: 0.1
+Summary: Simplfied access to satellite and climate data across products.
+Home-page: https://github.com/simonpf/wxdata
+Author: Simon Pfreundschuh
+Author-email: simon.pfreundschuh@chalmers.se
+License: UNKNOWN
+Project-URL: Source, https://github.com/simonpf/wxdata/
+Description: # WXDATA
+        
+        Prototype package to provide unified access and management of satellite
+        and climate data.
+        
+Platform: UNKNOWN
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

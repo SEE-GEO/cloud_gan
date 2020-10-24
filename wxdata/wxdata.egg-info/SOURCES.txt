@@ -1,0 +1,8 @@
+README.md
+setup.py
+wxdata/__init__.py
+wxdata.egg-info/PKG-INFO
+wxdata.egg-info/SOURCES.txt
+wxdata.egg-info/dependency_links.txt
+wxdata.egg-info/requires.txt
+wxdata.egg-info/top_level.txt
