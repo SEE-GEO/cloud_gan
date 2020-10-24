@@ -2,6 +2,7 @@ import numpy as np
 import numpy.ma as ma
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.ticker import (MultipleLocator, FormatStrFormatter, AutoMinorLocator)
 from scipy import constants
 import h5py
 import pysal
@@ -21,6 +22,12 @@ iaaft_scenes = np.float32(iaaft_scenes)
 
 iaaft_scenes = (iaaft_scenes+1)*(55/2)-35
 template = (template+1)*(55/2)-35
+
+f_size = 14
+
+freeze_height = (288.15-273.15)/6.5 #approximate altitude in km for zero degree level
+index_freeze = 6
+
 
 w = pysal.lib.weights.lat2W(64, 64, rook=True)  # use rook=False to add corners to neighbours
 
@@ -43,41 +50,52 @@ for i in range(0,5):
 
     pcm1 = axs[3,i].pcolormesh(xplot,yplot,np.transpose(Z), norm=norm)
     axs[3, i].minorticks_on()
-    axs[3,i].set_xlabel('Position [km]', fontsize=12)
+    axs[3,i].set_xlabel('Position [km]', fontsize=f_size)
     if i == 0:
-        axs[3, i].set_ylabel('Real \nAltitude [km]', fontsize=12)
+        axs[3, i].set_ylabel('Real \nAltitude [km]', fontsize=f_size)
     else:
         axs[3, i].tick_params(labelleft=False)
-    axs[3, i].tick_params(axis='both', which='both', labelsize='12')
-    axs[3, i].text(2, 15, 'I = '+str(value), style='italic', fontsize=12, color='white')
+    axs[3, i].tick_params(axis='both', which='both', labelsize=f_size)
+    axs[3, i].text(4, 14.5, 'I = '+str(value), style='italic', fontsize=f_size, color='white')
 
     pcm = axs[2,i].pcolormesh(xplot,yplot,np.transpose(X), norm=norm)
     axs[2, i].minorticks_on()
-    axs[2, i].tick_params(axis='both', which='major', labelsize='12')
+    axs[2, i].tick_params(axis='both', which='major', labelsize=f_size)
     axs[2, i].tick_params(axis='both', which='minor')
     axs[2, i].tick_params(labelbottom=False)
-    axs[2, i].text(2, 15, 'I = '+str(valuex), style='italic', fontsize=12, color='white')
+    axs[2, i].text(4, 14.5, 'I = '+str(valuex), style='italic', fontsize=f_size, color='white')
     if i == 0:
-        axs[2, i].set_ylabel('Generated \nAltitude [km]', fontsize=12)
+        axs[2, i].set_ylabel('Generated \nAltitude [km]', fontsize=f_size)
     else:
         axs[2, i].tick_params(labelleft=False)
 
+    print(template[i*step].shape, 'template shape')
+    print(iaaft_scenes[i*step].shape, 'iaaft_scenes shape')
+    index_zeros = np.ones([1,1,64,1])*index_freeze
+    print(index_zeros.shape, 'index zeros shape')
 
-    [IWP_cs_1, IWP_cs_2, IWP_cs_3] = IceWaterPathMethod(torch.tensor(template[i*step]))
-    [IWP_generated_1, IWP_generated_2, IWP_generated_3] = IceWaterPathMethod(torch.tensor(iaaft_scenes[i*step]))
+    [IWP_cs_1, IWP_cs_2, IWP_cs_3] = IceWaterPathMethod(torch.tensor(template[i*step]).reshape(-1,1,64,64), index_zeros)
+    [IWP_generated_1, IWP_generated_2, IWP_generated_3] = IceWaterPathMethod(torch.tensor(iaaft_scenes[i*step]).reshape(-1,1,64,64),index_zeros)
     axs[0, i].minorticks_on()
-    axs[0, i].tick_params(axis='both', which='major', labelsize='12')
+    axs[0, i].tick_params(axis='both', which='major', labelsize=f_size)
     axs[0, i].tick_params(axis='both', which='minor')
-    axs[0,i].set_ylim([0.0625,16])
-    pcm = axs[0, i].semilogy(xplot, (IWP_generated_1), color='grey', label='IWP generated',basey=2)
-    pcm = axs[0, i].semilogy(xplot, (IWP_cs_1), color='black', label='IWP real',basey=2)
+    #axs[0,i].set_ylim([0.0625,16])
+    #axs[0, i].set_ylim([2 ** (-4), 2 ** 4])
+    axs[0, i].set_ylim([10 ** (1), 10 ** 5])
+    pcm = axs[0, i].semilogy(xplot, (IWP_generated_1[0,0]), color='grey', label='IWP generated',basey=10)
+    pcm = axs[0, i].semilogy(xplot, (IWP_cs_1[0,0]), color='black', label='IWP real',basey=10)
     title_str = 'IWP generated' + str(i)
     #axs[0,i].set_title(title_str, fontsize=2)
     axs[0, i].tick_params(labelbottom=False)
     if i == 0:
-        axs[0, i].set_ylabel('IWP [g m⁻²]', fontsize=12)
+        axs[0, i].set_ylabel('IWP [g m⁻²]', fontsize=f_size)
     else:
         axs[0, i].tick_params(labelleft=False)
+    locmaj = matplotlib.ticker.LogLocator(base=10, numticks=6)
+    axs[0, i].yaxis.set_major_locator(locmaj)
+    locmin = matplotlib.ticker.LogLocator(base=10.0, subs=(0.2, 0.4, 0.6, 0.8), numticks=7)
+    axs[0, i].yaxis.set_minor_locator(locmin)
+    axs[0, i].yaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
 
     # Calculate cloud top height:
     altitudes_template = np.zeros([1, 64])
@@ -105,11 +123,11 @@ for i in range(0,5):
     height2 = axs[2, i].plot(xplot, np.transpose(altitudes_iaaft), color='white', linewidth=0.7)
     axs[1,i].set_ylim([1,16.36])
     axs[1,i].minorticks_on()
-    axs[1, i].tick_params(axis='both', which='major', labelsize='12')
+    axs[1, i].tick_params(axis='both', which='major', labelsize=f_size)
     axs[1, i].tick_params(axis='both', which='minor')
     axs[1,i].tick_params(labelbottom=False)
     if i == 0:
-        axs[1, i].set_ylabel('Cloud-top \nheight [km]', fontsize=12)
+        axs[1, i].set_ylabel('Cloud-Top \nHeight [km]', fontsize=f_size)
     else:
         axs[1, i].tick_params(labelleft=False)
 
@@ -117,7 +135,23 @@ f.tight_layout()
 f.subplots_adjust(right=0.88)
 cbar_ax = f.add_axes([0.9, 0.0698, 0.025, 0.443]) #([distance from left, bottom height, width, height])
 cbar1= f.colorbar(pcm1, cax=cbar_ax)
-cbar1.set_label('Reflectivities [dBZ]', fontsize=12)
+cbar1.set_label('Reflectivities [dBZ]', fontsize=f_size)
 cbar1.ax.tick_params(labelsize=12)
-plt.savefig('./Results/IAAFT/example_scenes_iaaft2.png')
+f.savefig('./Results/IAAFT/example_scenes_iaaft3.png')
+
+f1,axs1 = plt.subplots(4,5, figsize=(13,9))
+norm = Normalize(-35, 20)
+xplot=np.linspace(0,64*1.1,64)
+yplot=np.linspace(1,16.36,64)
+for i in range(0,4):
+    for j in range(0,5):
+        axs1[i, j].pcolormesh(xplot, yplot, np.transpose(iaaft_scenes[i*step+j]), norm=norm)
+        axs1[i, j].minorticks_on()
+        axs1[i, j].tick_params(axis='both', which='major', labelsize=f_size)
+        axs1[i, j].tick_params(axis='both', which='minor')
+        axs1[i, j].tick_params(labelbottom=False)
+        axs1[i, j].tick_params(labelleft=False)
+f1.tight_layout()
+f1.savefig('./Results/IAAFT/example_scenes_iaaftonly.png')
+
 #plt.show()

@@ -38,9 +38,9 @@ def IceWaterPathMethod(cloudsat_scenes, zero_indices):
             IWC_above_freeze_2[scene, 0, position,zero_index_at_position:] = IWC_ver2[scene, 0, position, zero_index_at_position:]
             IWC_above_freeze_3[scene, 0, position,zero_index_at_position:] = IWC_ver3[scene, 0, position, zero_index_at_position:]
 
-    IWC_vertical_integrals = np.multiply(IWC_above_freeze_1, 240)
-    IWC_vertical_integrals_ver2 = np.multiply(IWC_above_freeze_2, 240)
-    IWC_vertical_integrals_ver3 = np.multiply(IWC_above_freeze_3, 240)
+    IWC_vertical_integrals = np.multiply(IWC_above_freeze_1, 240*1100)
+    IWC_vertical_integrals_ver2 = np.multiply(IWC_above_freeze_2, 240*1100)
+    IWC_vertical_integrals_ver3 = np.multiply(IWC_above_freeze_3, 240*1100)
 
     IWC_vertical_integrals = torch.tensor(IWC_vertical_integrals)
     IWC_vertical_integrals_ver2 = torch.tensor(IWC_vertical_integrals_ver2)
@@ -51,8 +51,8 @@ def IceWaterPathMethod(cloudsat_scenes, zero_indices):
     IWC_vertical_sum_ver2 = torch.sum(IWC_vertical_integrals_ver2, dim=3)
     IWC_vertical_sum_ver3 = torch.sum(IWC_vertical_integrals_ver3, dim=3)
     # Convert from
-    IWP_test_scene = IWC_vertical_sum * 1e-3
-    IWP_test_scene_ver2 = IWC_vertical_sum_ver2 * 1e-3
-    IWP_test_scene_ver3 = IWC_vertical_sum_ver3 * 1e-3
+    IWP_test_scene = IWC_vertical_sum*1e-3
+    IWP_test_scene_ver2 = IWC_vertical_sum_ver2*1e-3
+    IWP_test_scene_ver3 = IWC_vertical_sum_ver3*1e-3
 
     return [IWP_test_scene, IWP_test_scene_ver2, IWP_test_scene_ver3]
